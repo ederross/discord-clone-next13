@@ -1,32 +1,29 @@
-import { redirectToSignIn } from "@clerk/nextjs";
-import { redirect } from "next/navigation";
+import { redirectToSignIn } from '@clerk/nextjs'
+import { redirect } from 'next/navigation'
 
-import { db } from "@/lib/db";
-import { getOrCreateConversation } from "@/lib/conversation";
-import { currentProfile } from "@/lib/current-profile";
-import { ChatHeader } from "@/components/chat/chat-header";
-import { ChatMessages } from "@/components/chat/chat-messages";
-import { ChatInput } from "@/components/chat/chat-input";
-import { MediaRoom } from "@/components/media-room";
+import { db } from '@/lib/db'
+import { getOrCreateConversation } from '@/lib/conversation'
+import { currentProfile } from '@/lib/current-profile'
+import { ChatHeader } from '@/components/chat/chat-header'
+import { ChatMessages } from '@/components/chat/chat-messages'
+import { ChatInput } from '@/components/chat/chat-input'
+import { MediaRoom } from '@/components/media-room'
 
 interface MemberIdPageProps {
   params: {
-    memberId: string;
-    serverId: string;
-  },
+    memberId: string
+    serverId: string
+  }
   searchParams: {
-    video?: boolean;
+    video?: boolean
   }
 }
 
-const MemberIdPage = async ({
-  params,
-  searchParams,
-}: MemberIdPageProps) => {
-  const profile = await currentProfile();
+const MemberIdPage = async ({ params, searchParams }: MemberIdPageProps) => {
+  const profile = await currentProfile()
 
   if (!profile) {
-    return redirectToSignIn();
+    return redirectToSignIn()
   }
 
   const currentMember = await db.member.findFirst({
@@ -37,24 +34,27 @@ const MemberIdPage = async ({
     include: {
       profile: true,
     },
-  });
+  })
 
   if (!currentMember) {
-    return redirect("/");
+    return redirect('/')
   }
 
-  const conversation = await getOrCreateConversation(currentMember.id, params.memberId);
+  const conversation = await getOrCreateConversation(
+    currentMember.id,
+    params.memberId,
+  )
 
   if (!conversation) {
-    return redirect(`/servers/${params.serverId}`);
+    return redirect(`/servers/${params.serverId}`)
   }
 
-  const { memberOne, memberTwo } = conversation;
+  const { memberOne, memberTwo } = conversation
 
-  const otherMember = memberOne.profileId === profile.id ? memberTwo : memberOne;
+  const otherMember = memberOne.profileId === profile.id ? memberTwo : memberOne
 
-  return ( 
-    <div className="bg-white dark:bg-[#313338] flex flex-col h-full">
+  return (
+    <div className="flex h-full flex-col bg-white dark:bg-[#313338]">
       <ChatHeader
         imageUrl={otherMember.profile.imageUrl}
         name={otherMember.profile.name}
@@ -62,11 +62,7 @@ const MemberIdPage = async ({
         type="conversation"
       />
       {searchParams.video && (
-        <MediaRoom
-          chatId={conversation.id}
-          video={true}
-          audio={true}
-        />
+        <MediaRoom chatId={conversation.id} video={true} audio={true} />
       )}
       {!searchParams.video && (
         <>
@@ -94,7 +90,7 @@ const MemberIdPage = async ({
         </>
       )}
     </div>
-   );
+  )
 }
- 
-export default MemberIdPage;
+
+export default MemberIdPage
